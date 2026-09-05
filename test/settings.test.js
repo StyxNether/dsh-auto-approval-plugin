@@ -6,8 +6,13 @@ import {
   hasLegacyShape,
   modeFromLegacy,
   normalizeConfig,
+  NS,
   schema
 } from "../lib/settings.js";
+
+test("settings namespace is the plain canonical string (no dsh-settings helper export)", () => {
+  assert.equal(NS, "auto-approval");
+});
 
 test("settings schema resolves defaults for an empty section", () => {
   const resolved = schema["~standard"].validate({});

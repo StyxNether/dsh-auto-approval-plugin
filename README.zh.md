@@ -54,6 +54,8 @@ dsh plugin --profile <profile> add dsh-auto-approval-plugin
 dsh plugin --profile <profile> add github:StyxNether/dsh-auto-approval-plugin#<commit>
 ```
 
+> **兼容性**：适配 DSH `0.1.2-rc.1`（使用 `session.snapshotEvents()` 与 `permissionPresets.current(session)`），同时保留 rc.1 之前 `session.events` / `current(events)` 形态的兼容回退。
+
 ## 配置
 
 两层配置，都**即时生效（无需重启）**：
@@ -200,3 +202,7 @@ node scripts/verify-composition.js <profile>   # 离线校验组合配置与官�
 ```
 
 决策核心是不依赖任何第三方包的纯 JavaScript；插件本身是标准 Cordis 插件（见 `lib/index.js`）。架构说明见 [docs/architecture.zh.md](docs/architecture.zh.md)。相关官方资料：[扩展教程 extension-cookbook](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/extension-cookbook.md)、[插件配置](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/config.md)、[工具执行流水线](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/tool-execution-pipeline.md)。
+
+## 许可证
+
+MIT — 见 [LICENSE](LICENSE)。

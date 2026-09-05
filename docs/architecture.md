@@ -26,7 +26,7 @@ tool call (pwsh/bash/write/edit)
             └─ ApprovalService.decide → ctx.waterfall("approval/request", ...)
                  ├─ this plugin's answerer (prepend):
                  │    1. effective config (mode off/gated/global gate) → next() if inactive
-                 │    2. findToolCall(session.events, callId, toolName) → real arguments
+                 │    2. findToolCall(session.snapshotEvents(), callId, toolName) → real arguments
                  │    3. classifyRequest → "allow" → return "allowed-once" (chain stops)
                  │                    → "defer"/error → next()
                  │    4. remember() + ctx.logger.info (audit aid)

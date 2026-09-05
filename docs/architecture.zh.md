@@ -23,7 +23,7 @@
             └─ ApprovalService.decide → ctx.waterfall("approval/request", ...)
                  ├─ 本插件回答器（prepend 先行）：
                  │    1. 有效配置（mode：off / gated 档位门控 / global）→ 未激活则 next()
-                 │    2. findToolCall(session.events, callId, toolName) → 真实参数
+                 │    2. findToolCall(session.snapshotEvents(), callId, toolName) → 真实参数
                  │    3. classifyRequest → "allow" → 返回 "allowed-once"（链条终止）
                  │                    → "defer" / 异常 → next()
                  │    4. remember() + ctx.logger.info（审计辅助）

@@ -56,6 +56,8 @@ dsh plugin --profile <profile> add github:StyxNether/dsh-auto-approval-plugin#<c
 
 The bundle patch restates the complete permission preset table (DSH patches replace a row's whole config), so keep it in sync with `@deepseek-ai/dsh-base`'s table when upgrading DSH — the patch warns and is skipped if the target row is missing.
 
+> **Compatibility**: adapted for DSH `0.1.2-rc.1` (uses `session.snapshotEvents()` and `permissionPresets.current(session)`), while keeping a fallback for the pre-rc.1 `session.events` / `current(events)` shapes.
+
 ## Configure
 
 Two layers, both live (no restart needed):
@@ -205,3 +207,7 @@ node scripts/verify-composition.js <profile>   # offline composition/schema chec
 ```
 
 The decision core is dependency-free plain JavaScript; the plugin surface is a standard Cordis plugin (see `lib/index.js`). Architecture: [docs/architecture.md](docs/architecture.md). Relevant official material: [extension cookbook](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/extension-cookbook.md), [plugin configuration](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/config.md), [tool execution pipeline](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/tool-execution-pipeline.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
