@@ -54,8 +54,10 @@ window.__ModuleLoader__.load({
       log: 'Log each auto-approval decision',
       save: 'Save',
       reset: 'Restore defaults',
+      undo: 'Undo',
       saved: 'Saved (applies immediately)',
       resetDone: 'Restored defaults',
+      undoDone: 'Undo applied',
       loading: 'Loading…',
       loadError: 'Failed to load configuration: ',
       retry: 'Retry',
@@ -87,8 +89,10 @@ window.__ModuleLoader__.load({
       log: '记录每次自动放行日志',
       save: '保存',
       reset: '恢复默认',
+      undo: '撤销',
       saved: '已保存（立即生效）',
       resetDone: '已恢复默认',
+      undoDone: '已撤销',
       loading: '加载中…',
       loadError: '配置加载失败：',
       retry: '重试',
@@ -127,11 +131,17 @@ window.__ModuleLoader__.load({
     }
 
     function linesToArray(text) {
-      return text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+      // Keep empty lines while editing (Enter must create a newline in the
+      // textarea); blank entries are stripped again on save by cleanLines().
+      return text.split(/\r?\n/).map((line) => line.trim())
     }
 
     function arrayToLines(value) {
       return (value || []).join('\n')
+    }
+
+    function cleanLines(value) {
+      return (value || []).map((line) => line.trim()).filter(Boolean)
     }
 
     function isAbsolutePath(value) {
@@ -197,15 +207,22 @@ window.__ModuleLoader__.load({
       const value = state.config.value
       const defaults = state.config.defaults
       const overridden = Object.keys(draft).some((key) => JSON.stringify(draft[key]) !== JSON.stringify(defaults[key]))
-      const set = (key, next) => setDraft((current) => ({ ...current, [key]: next }))
+      const set = (key, next) => {
+        setDraft((current) => ({ ...current, [key]: next }))
+        // Any manual edit invalidates a pending "undo the last reset".
+        setState((current) => current.canUndo ? { ...current, canUndo: false, undoBackup: null } : current)
+      }
 
       const onSave = () => {
+        const areas = cleanLines(draft.trustedAreas)
+        const harmless = cleanLines(draft.harmlessPatterns)
+        const dangerous = cleanLines(draft.dangerousPatterns)
         const problems = []
-        for (const area of draft.trustedAreas) {
+        for (const area of areas) {
           if (!isAbsolutePath(area)) problems.push(t('invalidArea') + area)
         }
-        for (const key of ['harmlessPatterns', 'dangerousPatterns']) {
-          for (const source of draft[key]) {
+        for (const [key, values] of [['harmlessPatterns', harmless], ['dangerousPatterns', dangerous]]) {
+          for (const source of values) {
             try { new RegExp(source, 'i') } catch (error) { problems.push(t('invalidRegex').replace('{key}', key) + source) }
           }
         }
@@ -214,22 +231,42 @@ window.__ModuleLoader__.load({
           return
         }
         setState((current) => ({ ...current, saving: true, error: null, notice: null }))
-        saveConfig(draft)
+        saveConfig({ ...draft, trustedAreas: areas, harmlessPatterns: harmless, dangerousPatterns: dangerous })
           .then((config) => {
             setDraft(JSON.parse(JSON.stringify(config.value)))
-            setState({ phase: 'ready', config, saving: false, notice: t('saved') })
+            setState({ phase: 'ready', config, saving: false, notice: t('saved'), canUndo: false, undoBackup: null })
           })
           .catch((error) => setState((current) => ({ ...current, saving: false, error: t('saveError') + errorMessage(error) })))
       }
 
       const onReset = () => {
+        // Snapshot the current (cleaned) user settings so an accidental reset
+        // can be undone; blank editor lines are stripped before the snapshot.
+        const backup = {
+          ...JSON.parse(JSON.stringify(draft)),
+          trustedAreas: cleanLines(draft.trustedAreas),
+          harmlessPatterns: cleanLines(draft.harmlessPatterns),
+          dangerousPatterns: cleanLines(draft.dangerousPatterns)
+        }
         setState((current) => ({ ...current, saving: true, error: null, notice: null }))
         saveConfig({ $reset: true })
           .then((config) => {
             setDraft(JSON.parse(JSON.stringify(config.value)))
-            setState({ phase: 'ready', config, saving: false, notice: t('resetDone') })
+            setState({ phase: 'ready', config, saving: false, notice: t('resetDone'), canUndo: true, undoBackup: backup })
           })
           .catch((error) => setState((current) => ({ ...current, saving: false, error: t('resetError') + errorMessage(error) })))
+      }
+
+      const onUndo = () => {
+        const backup = state.undoBackup
+        if (!backup) return
+        setState((current) => ({ ...current, saving: true, error: null, notice: null }))
+        saveConfig(backup)
+          .then((config) => {
+            setDraft(JSON.parse(JSON.stringify(config.value)))
+            setState({ phase: 'ready', config, saving: false, notice: t('undoDone'), canUndo: false, undoBackup: null })
+          })
+          .catch((error) => setState((current) => ({ ...current, saving: false, error: t('saveError') + errorMessage(error) })))
       }
 
       const enabled = draft.mode !== 'off'
@@ -337,7 +374,13 @@ window.__ModuleLoader__.load({
             className: 'aa-btn',
             disabled: state.saving,
             onClick: onReset,
-          }, t('reset'))),
+          }, t('reset')),
+          React.createElement('button', {
+            type: 'button',
+            className: 'aa-btn',
+            disabled: state.saving || !state.canUndo,
+            onClick: onUndo,
+          }, t('undo'))),
 
         recent.length > 0
           ? React.createElement('details', { className: 'aa-details' },

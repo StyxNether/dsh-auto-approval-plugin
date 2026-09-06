@@ -3,5 +3,5 @@
 # as of the last confirmed-consistent state. Both languages carry equal
 # authority; after editing either side, bring the other along and re-record
 # with `git hash-object`.
-README.md: a27eaba5fafabd4d43cd62204c08cb1c18b86154
-README.zh.md: 023a98b4441c4298c3b4fcd1e4c479bc193ccafb
+README.md: 7b13d603c5c42ecf9b51ad6389d91907d4e5f532
+README.zh.md: eb316a92c67ee38e27864ef3faaf046f95095480

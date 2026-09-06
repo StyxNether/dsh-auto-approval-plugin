@@ -62,7 +62,7 @@ The bundle patch restates the complete permission preset table (DSH patches repl
 
 Two layers, both live (no restart needed):
 
-1. **Web settings page** (easiest): Settings → **Auto Approval** (a dedicated page in the settings sidebar). The page has a single master switch "Enable auto-approval"; once enabled it asks for the scope: "Only when the session tier is Auto Approval" (default) or "Globally, regardless of the session tier". You can also edit trusted areas (one absolute path per line), the harmless/dangerous pattern tables, the decision length limit and the log switch there. Changes are written to the `auto-approval` section of `settings.yaml` and apply immediately. The page also shows the last few auto-approval decisions.
+1. **Web settings page** (easiest): Settings → **Auto Approval** (a dedicated page in the settings sidebar). The page has a single master switch "Enable auto-approval"; once enabled it asks for the scope: "Only when the session tier is Auto Approval" (default) or "Globally, regardless of the session tier". You can also edit trusted areas (one absolute path per line), the harmless/dangerous pattern tables, the decision length limit and the log switch there. Changes are written to the `auto-approval` section of `settings.yaml` and apply immediately. The page also shows the last few auto-approval decisions. The trusted-area and pattern textareas accept Enter/newline while editing (blank lines are ignored on save), and "Restore defaults" is guarded by an immediate **Undo** button that restores the previous settings.
 2. **Composition config** (the default base): set in your profile's `cordis.patch.yml`:
 
 ```yaml
